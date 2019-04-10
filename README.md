@@ -1,4 +1,4 @@
-# Proyeto final para la materia de optimización
+# Proyeto final para la materia de optimización.
 Instrucciones.
 
 Para bajar las acciones, corra en terminal:
