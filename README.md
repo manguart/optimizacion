@@ -2,7 +2,7 @@
 Instrucciones.
 
 Para bajar las acciones, corra en terminal:
-`stock_data.R`
+`Rscript stock_data.R`
 
 Este genera unos archivos .png y los archivos `rendimiento_mensual.csv`, `precio_diario.csv`que serán utilizados para el análisis
 
