@@ -36,7 +36,7 @@ names(portafolio_daily_prices) <- nombres
 
 # Escritura en csv
 write.csv(x = portafolio_monthly_return, file = "rendimiento_mensual.csv")
-write.csv(portafolio_monthly_return, file = "precio_mensual.csv")
+write.csv(portafolio_monthly_return, file = "precio_diario.csv")
 
 png("correlation_returns.png")
 corrplot(cor(portafolio_monthly_return))
