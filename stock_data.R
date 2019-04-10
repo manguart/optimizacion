@@ -10,16 +10,16 @@ tickets <- c("AAPL", "AMZN", "MSFT", "GOOGL", "KO", "PEP", "JPM", "BAC", "NSANYN
 portafolio_daily_prices <- NULL
 portafolio_monthly_return <- NULL
 for (Ticker in tickets){
-   # Obtener precios
+   # Get prices
    prices <- getSymbols.yahoo(Ticker, 
                               from=start_date, to = end_date, 
                               periodicity = "daily", auto.assign=FALSE)[,4]
    portafolio_daily_prices <- cbind(portafolio_daily_prices, prices)
-   # Generar grafico
+   # Generate plots
    png(paste(Ticker, ".png", sep = ""))
    chartSeries(prices, name = Ticker)
    dev.off()
-   # Rendimiento mensual
+   # Monthly return
    portafolio_monthly_return <- cbind(portafolio_monthly_return, monthlyReturn(prices))
 }
 
