@@ -1,3 +1,6 @@
+"""
+This script creates in an empiric way, the Markowitz optimization with some date provided
+"""
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt

@@ -1,3 +1,4 @@
+# This script download some stocks (tickets) and create som .csv and time series for exploratory purposes
 library(quantmod)
 library(corrplot)
 # The user can set this dates
@@ -42,7 +43,3 @@ portafolio_daily_prices$date <- as.Date(index(portafolio_daily_prices))
 
 write.csv(x = portafolio_monthly_return, file = "monthly_return.csv", row.names=FALSE)
 write.csv(x = portafolio_daily_prices, file = "daily_price.csv", row.names=FALSE)
-
-#png("correlation_returns.png")
-#corrplot(cor(select(portafolio_monthly_return, -date)))
-#dev.off()
