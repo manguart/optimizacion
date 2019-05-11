@@ -5,7 +5,7 @@ library(corrplot)
 start_date = as.Date("2002-01-01")
 end_date= as.Date("2019-03-31")
 # Also, user can set stocks
-tickets <- c("AAPL", "AMZN", "MSFT", "GOOGL", "KO", "PEP", "JPM", "BAC", "NKE", "ORCL", "IBM", "PG", "WMT")
+tickets <- c("AAPL", "AMZN", "MSFT", "KO", "PEP", "JPM", "BAC", "NKE", "ORCL", "IBM", "PG", "WMT")
 portafolio_daily_prices <- NULL
 portafolio_monthly_return <- NULL
 for (Ticker in tickets){

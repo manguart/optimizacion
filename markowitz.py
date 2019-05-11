@@ -1,57 +1,95 @@
 """
-This script creates in an empiric way, the Markowitz optimization with some date provided
+This script optimize portfolio returns using Markowitz curve
 """
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import cvxopt
+from cvxopt import blas, solvers
+import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib.backends.backend_pdf import PdfPages
 
-monthly_returns = pd.read_csv('monthly_return.csv')
-monthly_returns_mean = monthly_returns.mean()
-covariance_matrix = monthly_returns.cov()
+return_data = pd.read_csv('monthly_return.csv')
+return_data = return_data[[i for i in return_data.keys() if i not in ('date')]]
+return_data = return_data.T.values
+n_portfolios = 50000
+mean_returns = np.mean(return_data, axis=1)
+sigma_returns = np.cov(return_data)
+number_of_optimal_values = 200
 
-num_assets = len(monthly_returns.keys()) - 1
-num_portfolios = 500000
 
-rf = 0.08 / 12
-
-port_returns = []
-port_volatility = []
-stock_weights = []
-for single_portfolio in range(num_portfolios):
-    weights = np.random.random(num_assets)
+def generate_portfolio():
+    """
+    For a given matrix with returns, generate random portfolio
+    """
+    weights = np.random.random(len(return_data))
     weights /= np.sum(weights)
-    returns = np.dot(weights, monthly_returns_mean)
-    volatility = np.sqrt(np.dot(weights.T, np.dot(covariance_matrix, weights)))
-    port_returns.append(returns)
-    port_volatility.append(volatility)
-    stock_weights.append(weights)
+
+    x = np.asmatrix(mean_returns)
+    weights_matrix = np.asmatrix(weights)
+    covariance_matrix = np.asmatrix(sigma_returns)
+
+    expected_return = weights_matrix * x.T
+    risk = np.sqrt(weights_matrix * covariance_matrix * weights_matrix.T)
+    return expected_return, risk
 
 
-summary_portafolio = pd.DataFrame(stock_weights, columns=monthly_returns_mean.keys())
-summary_portafolio['return'] = port_returns
-summary_portafolio['volatility'] = np.sqrt(port_volatility)
-summary_portafolio['sharpe_ratio'] = (summary_portafolio['return'] - rf)/summary_portafolio['volatility']
+def optimization(N):
+    """
+    Find optimal solutions using cvxopt package
+    """
+    total_stocks = len(return_data)
+    mus = [10 ** (5.0 * t / N - 1.0) for t in range(N)]
+    # Covariance matrix
+    Sigma = cvxopt.matrix(sigma_returns)
+    # Mean matrix
+    mean_return_cvx = cvxopt.matrix(mean_returns)
+    # Identity matrix
+    G = -cvxopt.matrix(np.eye(total_stocks))
+    # Vector of zeros
+    h = cvxopt.matrix(0.0, (total_stocks, 1))
+    # Vector of ones
+    A = cvxopt.matrix(1.0, (1, total_stocks))
+    # Just 1x1 matrix
+    b = cvxopt.matrix(1.0)
 
-max_sharpe_idx = np.argmax(summary_portafolio['sharpe_ratio'])
-minimum_volatility = np.argmin(summary_portafolio['volatility'])
+    portfolios = [solvers.qp(mu * Sigma, -mean_return_cvx,
+                             # Constraints
+                             G, h, A, b)['x'] for mu in mus]
+    # Multiply weights per expected return
+    expected_returns = [blas.dot(mean_return_cvx, p) for p in portfolios]
+    # Ger variance
+    portfolio_risk = [np.sqrt(blas.dot(p, Sigma * p)) for p in portfolios]
+    m1 = np.polyfit(expected_returns, portfolio_risk, 2)
+    x1 = np.sqrt(m1[2] / m1[0])
+    wt = np.asarray(solvers.qp(cvxopt.matrix(x1 * Sigma), -mean_return_cvx, G, h, A, b)['x'])
+    return wt, expected_returns, portfolio_risk
 
-max_sharpe = summary_portafolio.iloc[max_sharpe_idx]
-min_volatility = summary_portafolio.iloc[minimum_volatility]
+def main():
+    """
+    General calls
+    """
+    # Get random portfolio
+    random_return, random_risk = np.column_stack([generate_portfolio() for i in range(n_portfolios)])
+    random_risk = [j[0] for j in random_risk]
+    random_return = [k[0] for k in random_return]
 
+    # Optimal portfolio
+    wt, optimal_returns, optimal_risks = optimization(number_of_optimal_values)
 
-pdf = PdfPages('markowitz_curve.pdf')
-plt.figure()
-plt.scatter(summary_portafolio['volatility'], summary_portafolio['return'], alpha=0.1)
-plt.scatter(max_sharpe['volatility'],max_sharpe['return'], marker='*', color='g', s=100, label='Maximum Sharpe')
-plt.scatter(min_volatility['volatility'],min_volatility['return'], marker='*', color='r', s=100, label='Minimum volatility')
-plt.legend(loc='best')
-plt.grid(True)
-plt.title('Markowitz curve')
-plt.xlabel('Volatility')
-plt.ylabel('Expected Return')
-pdf.savefig()
-plt.close()
-pdf.close()
+    # Plot results
+    pdf = PdfPages('markowitz_curve.pdf')
+    plt.figure()
+    plt.plot(random_risk, random_return, 'o', markersize=5, alpha=0.5)
+    plt.plot(optimal_risks, optimal_returns, 'o', alpha=0.7, color='red')
+    plt.xlabel('Risk')
+    plt.grid()
+    plt.ylabel('Return')
+    plt.title('Markowitz curve')
+    pdf.savefig()
+    plt.close()
+    pdf.close()
+
+if __name__ == "__main__":
+    main()
