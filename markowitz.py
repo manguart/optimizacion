@@ -34,28 +34,39 @@ def generate_portfolio():
     risk = np.sqrt(weights_matrix * covariance_matrix * weights_matrix.T)
     return expected_return, risk
 
-def iif(cond, iftrue=1.0, iffalse=0.0):
+def condition(cond, iftrue=1.0, iffalse=0.0):
     return iftrue if cond else iffalse
 
 
-def markowitz(mu, sigma, mu_p):
+def markowitz(m, sigma, m_p):
+    """
+    Maximize W^T S W
+    st:
+    sum(W) = 1
+    np.dot(w,r) = m
+
+    Where:
+    m = expected return for a given combination
+    S = covariance matrix
+    W = weights 
+    """
     d = len(sigma)
-    P = matrix(sigma)
+    p = matrix(sigma)
     q = matrix([0.0 for i in range(d)])
 
-    G = matrix([
-        [(-1.0) ** (1 + j % 2) * iif(i == j / 2) for i in range(d)]
+    g = matrix([
+        [(-1.0) ** (1 + j % 2) * condition(i == j / 2) for i in range(d)]
         for j in range(2 * d)
     ]).trans()
-    h = matrix([iif(j % 2) for j in range(2 * d)])
+    h = matrix([condition(j % 2) for j in range(2 * d)])
 
-    A = matrix([
+    a = matrix([
         [1.0 for i in range(d)],
-        list(mu)
+        list(m)
     ]).trans()
-    b = matrix([1.0, float(mu_p)])
+    b = matrix([1.0, float(m_p)])
 
-    sol = solvers.qp(P, q, G, h, A, b)
+    sol = solvers.qp(p, q, g, h, a, b)
 
     w = list(sol['x'])
     return w
