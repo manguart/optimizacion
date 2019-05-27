@@ -3,7 +3,7 @@ This script optimize portfolio returns using Markowitz curve
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from cvxopt import blas, solvers, matrix
+import cvxopt
 import pandas as pd
 import matplotlib
 import random
@@ -13,63 +13,52 @@ from matplotlib.backends.backend_pdf import PdfPages
 return_data = pd.read_csv('monthly_return.csv')
 return_data = return_data[[i for i in return_data.keys() if i not in ('date')]]
 return_data = return_data.T.values
-n_portfolios = 1000000
+n_portfolios = 100000
 mean_returns = np.mean(return_data, axis=1)
 sigma_returns = np.cov(return_data)
-number_of_optimal_values = 5
 
 
 def generate_portfolio():
     """
     For a given matrix with returns, generate random portfolio
     """
-    weights = np.random.random(len(return_data))
-    weights /= np.sum(weights)
+    w = np.random.random(len(return_data))
+    w /= np.sum(w)
 
     x = np.asmatrix(mean_returns)
-    weights_matrix = np.asmatrix(weights)
+    w_matrix = np.asmatrix(w)
     covariance_matrix = np.asmatrix(sigma_returns)
 
-    expected_return = weights_matrix * x.T
-    risk = np.sqrt(weights_matrix * covariance_matrix * weights_matrix.T)
-    return expected_return, risk
-
-def condition(cond, iftrue=1.0, iffalse=0.0):
-    return iftrue if cond else iffalse
+    expected_return = w_matrix * x.T
+    risk = np.sqrt(w_matrix * covariance_matrix * w_matrix.T)
+    return risk, expected_return
 
 
-def markowitz(m, sigma, m_p):
+def markowitz(m, covariance_matrix, expected_return):
     """
     Maximize W^T S W
     st:
     sum(W) = 1
     np.dot(w,r) = m
-
     Where:
     m = expected return for a given combination
     S = covariance matrix
-    W = weights 
+    W = weights
     """
-    d = len(sigma)
-    p = matrix(sigma)
-    q = matrix([0.0 for i in range(d)])
+    condition_check = lambda cond: 1.0 if cond else 0.0
 
-    g = matrix([
-        [(-1.0) ** (1 + j % 2) * condition(i == j / 2) for i in range(d)]
-        for j in range(2 * d)
-    ]).trans()
-    h = matrix([condition(j % 2) for j in range(2 * d)])
+    d = len(covariance_matrix)
+    p = cvxopt.matrix(covariance_matrix)
+    q = cvxopt.matrix([0.0 for i in range(d)])
 
-    a = matrix([
-        [1.0 for i in range(d)],
-        list(m)
-    ]).trans()
-    b = matrix([1.0, float(m_p)])
+    g = cvxopt.matrix([[(-1.0) ** (1 + j % 2) * condition_check(i == j / 2)
+                        for i in range(d)] for j in range(2 * d)]).trans()
 
-    sol = solvers.qp(p, q, g, h, a, b)
+    h = cvxopt.matrix([condition_check(k % 2) for k in range(2 * d)])
 
-    w = list(sol['x'])
-    return w
+    a = cvxopt.matrix([[1.0 for i in range(d)], list(m)]).trans()
+    b = cvxopt.matrix([1.0, float(expected_return)])
+    return list(cvxopt.solvers.qp(p, q, g, h, a, b)['x'])
 
 
 def main():
@@ -77,22 +66,15 @@ def main():
     General calls
     """
     # Get random portfolio
-    random_return, random_risk = np.column_stack([generate_portfolio() for i in range(n_portfolios)])
+    random_risk, random_return = np.column_stack([generate_portfolio() for i in range(n_portfolios)])
     random_risk = [j[0] for j in random_risk]
     random_return = [k[0] for k in random_return]
 
-    returns_random_low = random.sample(random_return,k=20000)
-    optimals = []
-    [optimals.append(markowitz(mean_returns, sigma_returns, i)) for i in returns_random_low]
+    returns_random_low = random.sample(random_return, k=2000)
+    optimals = [markowitz(mean_returns, sigma_returns, i) for i in returns_random_low]
+    optimal_means = [np.dot(i, mean_returns) for i in optimals]
 
-    optimal_means = []
-    for i in optimals:
-        optimal_means.append(np.dot(i, mean_returns))
-
-    optimal_variance = []
-    for i in optimals:
-        variance_i = np.asmatrix(i)
-        optimal_variance.append(np.sqrt(float(variance_i * sigma_returns * variance_i.T)))
+    optimal_variance = [np.sqrt(float(np.asmatrix(i) * sigma_returns * np.asmatrix(i).T)) for i in optimals]
 
     # Plot results
     pdf = PdfPages('markowitz_curve.pdf')
@@ -109,4 +91,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
