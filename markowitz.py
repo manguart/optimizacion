@@ -62,7 +62,9 @@ mean_returns = np.mean(return_data, axis=1)
 sigma_returns = np.cov(return_data)
 
 # Cálculamos los pesos para un rendimiento dado de .009 permitiendo ventas en corto
-markowitz(mean_returns, sigma_returns, .009, Ventas_en_corto=True)
+markowitz(mean_returns, sigma_returns, .01, Ventas_en_corto=False)
 
 # Cálculamos los pesos para un rendimiento dado de .009 solo con pesos positivos
 markowitz(mean_returns, sigma_returns, .009, Ventas_en_corto=True)
+
+

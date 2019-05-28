@@ -22,6 +22,16 @@ sigma_returns = np.cov(return_data)
 def generate_portfolio():
     """
     For a given matrix with returns, generate random portfolio
+    W are the weights of stocks in a given portfolio
+    sum(w) = 1
+    Sigma is the covariance matrix
+    Expected return form portfolio = w * x^T
+    Portfolio variance = w * Sigma * w^T
+
+    The simulation process consist in generate some random weights and get
+    the variance and expected returns for those random weights. If you do this many times
+    you will find the optimal values for a particular portfolio allocation balancing
+    risk and reward
     """
     w = np.random.random(len(return_data))
     w /= np.sum(w)
@@ -44,7 +54,7 @@ def main():
     random_risk = [j[0] for j in random_risk]
     random_return = [k[0] for k in random_return]
 
-    returns_random_low = random.sample(random_return, k=2000)
+    returns_random_low = random.sample(random_return, k=10000)
     optimals = [markowitz(mean_returns, sigma_returns, i) for i in returns_random_low]
     optimal_means = [np.dot(i, mean_returns) for i in optimals]
 
