@@ -6,7 +6,7 @@
 # Sigma: una matriz de varianzas y covarianzas de los activos
 # rho: un rendimiento deseado
 ############################################################################
-
+# Cargamos las librerias que usaremos
 library(readr)
 library(dplyr)
 
