@@ -10,6 +10,7 @@
 library(readr)
 library(dplyr)
 
+# Definimos la función
 markowitz_simple_con_condicones_de_optimalidad<-function(r_i, Sigma, rho){
   ##########################################################################
   # Definimos la matriz de Karush–Kuhn–Tucker
