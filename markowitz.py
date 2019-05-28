@@ -19,7 +19,7 @@ def markowitz(r_i, sigma, rho, Ventas_en_corto = False):
     b = matrix([1.0, float(rho)])
     ##########################################################
     # Se define la restricción para cuando las ventas en corto
-    # no están permitidas
+    # están permitidas
     ##########################################################
     diagonal = np.zeros((d, d), float)
     np.fill_diagonal(diagonal, -1.0)
