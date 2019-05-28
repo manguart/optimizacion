@@ -29,12 +29,18 @@ markowitz_simple_con_condicones_de_optimalidad<-function(r_i, Sigma, rho){
   return(w_i)
 }
 
-# Ejemplo
+############################################################################
+################################### Ejemplo ################################
+############################################################################
+
+# Cargamos nuestros datos
 returns<- 'monthly_return.csv' %>%
   read_csv %>%
   select(-date)
 
+# Calculamos los inputs que necesitaremos
 sigma_returns<-cov(returns)
 mean_returns<-colMeans(returns)
- 
+
+# aplicamos la función para un rendimiento dado de .009
 markowitz_simple_con_condicones_de_optimalidad(mean_returns, sigma_returns, .009)
