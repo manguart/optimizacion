@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 """
 This script optimize portfolio returns using Markowitz curve
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import cvxopt
+from markowitz import markowitz
 import pandas as pd
 import matplotlib
 import random
@@ -32,33 +33,6 @@ def generate_portfolio():
     expected_return = w_matrix * x.T
     risk = np.sqrt(w_matrix * covariance_matrix * w_matrix.T)
     return risk, expected_return
-
-
-def markowitz(m, covariance_matrix, expected_return):
-    """
-    Maximize W^T S W
-    st:
-    sum(W) = 1
-    np.dot(w,r) = m
-    Where:
-    m = expected return for a given combination
-    S = covariance matrix
-    W = weights
-    """
-    condition_check = lambda cond: 1.0 if cond else 0.0
-
-    d = len(covariance_matrix)
-    p = cvxopt.matrix(covariance_matrix)
-    q = cvxopt.matrix([0.0 for i in range(d)])
-
-    g = cvxopt.matrix([[(-1.0) ** (1 + j % 2) * condition_check(i == j / 2)
-                        for i in range(d)] for j in range(2 * d)]).trans()
-
-    h = cvxopt.matrix([condition_check(k % 2) for k in range(2 * d)])
-
-    a = cvxopt.matrix([[1.0 for i in range(d)], list(m)]).trans()
-    b = cvxopt.matrix([1.0, float(expected_return)])
-    return list(cvxopt.solvers.qp(p, q, g, h, a, b)['x'])
 
 
 def main():
