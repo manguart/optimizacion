@@ -45,3 +45,23 @@ mean_returns<-colMeans(returns)
 
 # aplicamos la función para un rendimiento dado de .009
 markowitz_simple_con_condicones_de_optimalidad(mean_returns, sigma_returns, .009)
+
+Sigma = 1
+r_i = 1
+rho = 1
+
+kkt_matrix<-(2*Sigma) %>%
+  rbind(1) %>%
+  rbind(r_i) %>%
+  cbind(c(rep(1.0,ncol(Sigma)),0.0, 0.0)) %>%
+  cbind(c(r_i, 0, 0))
+  # Lado derecho
+  b<-c(rep(0,ncol(Sigma)),1, rho)
+  # Solucion del problema
+  w_i <- solve(kkt_matrix, b, tol = 1e-7) %>% as.data.frame
+
+  w_i + 2
+
+
+
+

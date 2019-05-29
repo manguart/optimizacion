@@ -68,3 +68,13 @@ markowitz(mean_returns, sigma_returns, .01, Ventas_en_corto=False)
 markowitz(mean_returns, sigma_returns, .009, Ventas_en_corto=True)
 
 
+
+
+
+
+
+
+
+
+
+

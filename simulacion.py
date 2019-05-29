@@ -14,7 +14,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 return_data = pd.read_csv('monthly_return.csv')
 return_data = return_data[[i for i in return_data.keys() if i not in ('date')]]
 return_data = return_data.T.values
-n_portfolios = 100000
+n_portfolios = 500000
 mean_returns = np.mean(return_data, axis=1)
 sigma_returns = np.cov(return_data)
 
@@ -54,7 +54,7 @@ def main():
     random_risk = [j[0] for j in random_risk]
     random_return = [k[0] for k in random_return]
 
-    returns_random_low = random.sample(random_return, k=10000)
+    returns_random_low = random.sample(random_return, k=20000)
     optimals = [markowitz(mean_returns, sigma_returns, i) for i in returns_random_low]
     optimal_means = [np.dot(i, mean_returns) for i in optimals]
 
@@ -64,7 +64,7 @@ def main():
     pdf = PdfPages('markowitz_curve.pdf')
     plt.figure()
     plt.plot(random_risk, random_return, 'o', markersize=5, alpha=0.5)
-    plt.plot(optimal_variance, optimal_means, 'o', alpha=0.7, color='red')
+#    plt.plot(optimal_variance, optimal_means, 'o', alpha=0.7, color='red')
     plt.xlabel('Risk')
     plt.grid()
     plt.ylabel('Return')

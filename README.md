@@ -9,5 +9,6 @@ Para instalar los paquetes de python:
 Este genera unos archivos .png y los archivos `rendimiento_mensual.csv`, `precio_diario.csv`que serán utilizados para el análisis
 
 Para correr la optimización de markowitz, corra:
-`python markowitz.py`
+`python simulacion.py`
 
+Revise el gráfico
